@@ -100,27 +100,39 @@ public class Audio {\r\n
     IAudioEndpointVolume epv = null;\r\n
     var epvid = typeof(IAudioEndpointVolume).GUID;\r\n
     Marshal.ThrowExceptionForHR(dev.Activate(ref epvid, /*CLSCTX_ALL*/ 23, 0, out epv));\r\n
+    Marshal.ReleaseComObject(dev);\r\n
+    Marshal.ReleaseComObject(enumerator);\r\n
     return epv;\r\n
     }\r\n
     public static float Volume {\r\n
-    get {float v = -1; Marshal.ThrowExceptionForHR(Vol().GetMasterVolumeLevelScalar(out v)); return v;}\r\n
-    set {Marshal.ThrowExceptionForHR(Vol().SetMasterVolumeLevelScalar(value, System.Guid.Empty));}\r\n
+    get {float v = -1; var epv = Vol(); try { Marshal.ThrowExceptionForHR(epv.GetMasterVolumeLevelScalar(out v)); return v; } finally { Marshal.ReleaseComObject(epv); }}\r\n
+    set {var epv = Vol(); try { Marshal.ThrowExceptionForHR(epv.SetMasterVolumeLevelScalar(value, System.Guid.Empty)); } finally { Marshal.ReleaseComObject(epv); }}\r\n
     }\r\n
     public static bool Mute {\r\n
-    get { bool mute; Marshal.ThrowExceptionForHR(Vol().GetMute(out mute)); return mute; }\r\n
-    set { Marshal.ThrowExceptionForHR(Vol().SetMute(value, System.Guid.Empty)); }\r\n
+    get { bool mute; var epv = Vol(); try { Marshal.ThrowExceptionForHR(epv.GetMute(out mute)); return mute; } finally { Marshal.ReleaseComObject(epv); } }\r\n
+    set { var epv = Vol(); try { Marshal.ThrowExceptionForHR(epv.SetMute(value, System.Guid.Empty)); } finally { Marshal.ReleaseComObject(epv); } }\r\n
     }\r\n
 };\r\n
 '@\r\n`,
     command: "[Audio]::Volume | Out-Host; [Audio]::Mute | Out-Host;",
     onResponse: (data) => {
-      if (data && data.length > 0) {
-        // get volume and mute state out of the top two lines
+      if (data && data.length >= 2) {
+        // a normal poll returns exactly two lines: volume first, mute second
         // replace any ',' with a '.' - some locales use unparsable comma
         let newVolume = Math.round(
-          parseFloat(data.shift().replace(",", ".")) * 100
+          parseFloat(String(data[0]).replace(",", ".")) * 100
         );
-        let newMuted = data.shift() === "True" ? true : false;
+        let rawMuted = data[1];
+
+        // A transient COM error during a device/endpoint transition can drop or
+        // garble a line. The old code coerced a missing/garbage mute line into
+        // `false`, which briefly UN-muted Voicemeeter before the next poll
+        // re-muted it (audio "pops in" for a split second). Never guess: if the
+        // sample isn't well-formed, skip it and wait for the next poll.
+        if ((rawMuted !== "True" && rawMuted !== "False") || isNaN(newVolume)) {
+          return;
+        }
+        let newMuted = rawMuted === "True";
 
         let events = {
           first_start: {
