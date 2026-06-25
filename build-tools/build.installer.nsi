@@ -11,16 +11,16 @@
 ; Injected
 
 ;{{INJECT_START:PKG}}
-OutFile "../_dist/Install_voicemeeter-windows-volume_v1.8.0.2_x64.exe"
+OutFile "../_dist/Install_voicemeeter-windows-volume_v1.8.0.2-rmsage_x64.exe"
 !define PRODUCT_NAME "Voicemeeter Windows Volume"
 !define PACKAGE_NAME "voicemeeter-windows-volume"
 !define EXE_NAME "VMWV.exe"
 !define PRODUCT_DESCRIPTION "Tray app that allows you to sync windows volume and mute state to Voicemeeter volume controls"
-!define PRODUCT_VERSION "1.8.0.2"
-!define SETUP_VERSION 1.8.0.2
-!define MUI_TEXT_WELCOME_INFO_TEXT "This will guide you through the installation of Voicemeeter Windows Volume v1.8.0.2.$\r$\n$\r$\nClick Next to continue."
+!define PRODUCT_VERSION "1.8.0.2-rmsage"
+!define SETUP_VERSION 1.8.0.2-rmsage
+!define MUI_TEXT_WELCOME_INFO_TEXT "This will guide you through the installation of Voicemeeter Windows Volume v1.8.0.2-rmsage.$\r$\n$\r$\nClick Next to continue."
 Name "Voicemeeter Windows Volume"
-BrandingText "Voicemeeter Windows Volume v1.8.0.2"
+BrandingText "Voicemeeter Windows Volume v1.8.0.2-rmsage"
 InstallDir "$PROGRAMFILES\Voicemeeter Windows Volume"
 InstallDirRegKey HKCU "Software\Voicemeeter Windows Volume" ""
 ;{{INJECT_END:PKG}}
@@ -35,7 +35,8 @@ RequestExecutionLevel admin ; user|highest|admin
 
 ;-------------------------------------------------------------------------------
 ; Version Info
-VIProductVersion "${PRODUCT_VERSION}"
+; VIProductVersion must be numeric X.X.X.X; PRODUCT_VERSION may carry a -suffix
+VIProductVersion "1.8.0.2"
 VIAddVersionKey "ProductName" "${PRODUCT_NAME}"
 VIAddVersionKey "ProductVersion" "${PRODUCT_VERSION}"
 VIAddVersionKey "FileDescription" "${PRODUCT_DESCRIPTION}"
@@ -99,7 +100,7 @@ Section "Tray Application" MyApp1
 ;{{INJECT_START:UNINSTALLER}}
     WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}" "Publisher" "Frosthaven"
     WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}" "DisplayName" "Voicemeeter Windows Volume"
-    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}" "DisplayVersion" 1.8.0.2
+    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}" "DisplayVersion" 1.8.0.2-rmsage
     WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}" "DisplayIcon" "$INSTDIR\required\${EXE_NAME},0"
 ;{{INJECT_END:UNINSTALLER}}
 
